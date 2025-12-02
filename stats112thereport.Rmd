@@ -49,7 +49,7 @@ Understanding how students engage with complex global issues, such as migration,
 
 # IV. Exploratory Data Analysis
 
-```{r, echo = FALSE}
+```{r, include=FALSE}
 # helper functions
 
 # clean text 
@@ -91,7 +91,7 @@ plot_with_commentary <- function(plot_expr, title = "", commentary = "") {
 
 ```
 
-```{r}
+```{r, include=FALSE}
 # plot top terms 
 plot_top_terms <- function(dfm_obj, n = 20, title = "") {
 tf <- topfeatures(dfm_obj, n)
@@ -106,18 +106,27 @@ labs(title = title, x = "Word", y = "Frequency")
 
 ```
 
-```{r}
+```{r, include=FALSE}
 # wordclouds
 plot_wordcloud_dfm <- function(dfm_obj, title = "") {
-freq <- sort(colSums(dfm_obj), decreasing = TRUE)
-wordcloud(
-names(freq), freq,
-min.freq = 2,
-max.words = 100,
-colors = brewer.pal(8, "Dark2")
-)
-title(main = title)
+  
+  op <- par(mar = c(0, 0, 1, 0))
+  on.exit(par(op))
+
+  freq <- sort(colSums(dfm_obj), decreasing = TRUE)
+  
+  wordcloud(
+    names(freq), freq,
+    min.freq = 2,
+    max.words = 100,
+    scale = c(3.5, 0.8),
+    rot.per = 0.1,
+    random.order = FALSE,
+    colors = brewer.pal(8, "Dark2")
+  )
+  title(main = title)
 }
+
 
 # plot keyness comparison
 plot_keyness_comparison <- function(ref_dfm, chap_dfm, plot_title) {
@@ -150,7 +159,7 @@ plot_keyness_comparison <- function(ref_dfm, chap_dfm, plot_title) {
 }
 ```
 
-```{r}
+```{r, include=FALSE}
 # load data
 general_ref <- readtext("Reflections/General/*.txt")
 middleeast_ref <- readtext("Reflections/Middle East/*.txt")
@@ -158,7 +167,7 @@ southamerica_ref <- readtext("Reflections/South America/*.txt")
 asia_ref <- readtext("Reflections/Asia/*.txt")
 ```
 
-```{r}
+```{r, include=FALSE}
 # clean data
 general_ref$text <- clean_text_simple(general_ref$text)
 middleeast_ref$text <- clean_text_simple(middleeast_ref$text)
@@ -166,7 +175,7 @@ southamerica_ref$text <- clean_text_simple(southamerica_ref$text)
 asia_ref$text <- clean_text_simple(asia_ref$text)
 ```
 
-```{r}
+```{r, include=FALSE}
 # by region
 general_dfm    <- create_dfm(general_ref$text)
 middleeast_dfm <- create_dfm(middleeast_ref$text)
@@ -202,31 +211,24 @@ plot_top_terms(asia_dfm, title = "Top Words: Asia Reflections"),
 
 ```{r}
 # wordclouds
-plot_with_commentary(
-plot_wordcloud_dfm(general_dfm, "General Reflections"),
-"Word Cloud — General"
-)
+plot_wordcloud_dfm(general_dfm, "General Reflections")
+cat(paste(strwrap("Overall, the word cloud illustrates that students gravitate toward themes of migration, national identity, gender, cultural diversity, and personal experience. These themes strongly resonate with the central concerns of In the Heart of Another, confirming the study’s finding that student reflections meaningfully engage with Philips’ material.", width = 80), collapse = "\n"))
 
-plot_with_commentary(
-plot_wordcloud_dfm(middleeast_dfm, "Middle East Reflections"),
-"Word Cloud — Middle East"
-)
+plot_wordcloud_dfm(middleeast_dfm, "Middle East Reflections")
+cat(paste(strwrap("The Middle East reflections (Armenia) show a pronounced focus on the personal, and emotional dimensions of the material. Dominant words like life, women, and stories indicate a deep engagement with the individual narratives and experiences, particularly those of female immigrants. Uniquely, the large size of reading and book suggests students were highly conscious of the source material and the act of learning from it. The frequent appearance of terms like difficult suggests they reflected on the emotional weight and challenges presented in these stories.", width = 80), collapse = "\n"))
 
-plot_with_commentary(
-plot_wordcloud_dfm(southamerica_dfm, "South America Reflections"),
-"Word Cloud — South America"
-)
+plot_wordcloud_dfm(southamerica_dfm, "South America Reflections")
+cat(paste(strwrap("The student reflections focused on South America heavily emphasized the logistical and legal challenges of migration to the United States. The prominence of words like immigrants, life, american, united, and states clearly frames the experience within the context of the destination country. Furthermore, key terms such as illegal and struggles highlight the reflections' attention to social justice issues and the difficult journey, often centered around immigrant parents and the impact on family.", width = 80), collapse = "\n"))
 
-plot_with_commentary(
-plot_wordcloud_dfm(asia_dfm, "Asia Reflections"),
-"Word Cloud — Asia"
-)
+
+plot_wordcloud_dfm(asia_dfm, "Asia Reflections")
+cat(paste(strwrap("The student papers on Asia were primarily concerned with cultural identity and adaptation to a new environment. While core themes of people, immigrants, and family remain central, the specific focus on culture, china, and chinese points to a deep dive into the specific cultural background and adjustment process. The inclusion of terms like woman and english suggests reflections on how gender roles and linguistic barriers affect assimilation and the construction of a new life in the receiving country.", width = 80), collapse = "\n"))
 
 ```
 
 Chapter Analysis 
 
-```{r}
+```{r, include=FALSE}
 chapters <- list(
 ana        = readtext("In the Heart of Another/ana and juanita.txt"),
 marie      = readtext("In the Heart of Another/marie and michelle.txt"),
@@ -291,7 +293,7 @@ plot_keyness_comparison(general_dfm, chap_dfms$thuynga, "General vs Thuynga")
 
 LDA Topic Modeling 
 
-```{r}
+```{r, include=FALSE}
 # lda modeling
 library(topicmodels)
 library(slam)
@@ -375,7 +377,7 @@ ggplot(topic_terms_df, aes(x = reorder(term, rank), y = as.numeric(rank), fill =
 
 Topic Distribution per document
 
-```{r}
+```{r, include=FALSE}
 k <- lda_model@k  # number of topics
 D <- length(all_ref_dtm$dimnames$Docs)  # number of documents
 
@@ -430,3 +432,51 @@ top_topic_doc <- doc_topics %>%
 
 top_topic_doc
 ```
+
+# Conclusion
+
+
+1. Students resonate emotionally more than contextually
+Across TF and word clouds, students emphasize human-centered themes like: identity and belonging (life, culture, family, people), empathy and connection (feel, stories, think), and gender and resilience (women). In contrast, the book chapters surface historical & geopolitical identifiers (e.g., civil war in El Salvador, Soviet Armenia, migration by ship from Vietnam), showing that students internalized personal struggle narratives but did not engage as deeply with regional historical framing.
+
+2. Regional categorization of reflections does not always match content
+The “Middle East” and “South America” folders still contain high-frequency references to China and generalized U.S. immigration terms (america, immigrant, states, women). This suggests that students often mapped specific global narratives onto broader U.S. immigration discourse. Reflection labels were not strong predictors of linguistic content and the Xidan (China) story disproportionately shaped student vocabulary across all regions. This is an important conclusion about student interpretation behavior, not modeling error.
+
+3. Topic modeling reveals distinct thematic clusters, but personal themes dominate
+The 4-topic LDA model can be interpreted as: 1) cultural identity and assimilation, 2) emotional response and empathy, 3) China-centered narrative influence and generational migration, and 4) gender, mobility, and societal-level immigration patterns. The topic distribution plots show that most documents were almost entirely dominated by a single topic (gamma > 0.95), meaning student reflections were thematically clear but narrow in focus.
+
+4. Students engage with migration as a lived experience, not a historical event
+The lack of high-keyness geographic terms like El Salvador, Mexico, Vietnam, or Armenia in student text shows that students framed migration as a personal/familial journey, a cultural identity transition, and part of a shared immigrant condition rather than grounding it in country-specific political forces highlighted in Philips’ chapters.
+
+5. Language and culture barriers are perceived as central to migration
+Across all reflection regions, students elevate words like culture, english, immigrants, and american as significantly key, implying that students saw cultural integration and language acquisition as core challenges. Even when chapters didn’t prioritize those terms (e.g., Mexico or Armenia), students still foregrounded them. Linguistic difficulty and cultural identity were more salient to students than to the chapter texts themselves.
+
+6. Gender-focused interpretation is a strong emergent theme
+Topic 4 and word clouds both strongly highlight women, supporting the conclusion that students perceived female narratives, resilience, and mother-figures as particularly impactful and gender was one of the strongest unifying takeaways, despite not being the controlling variable.
+
+7. Limited dataset still produced meaningful thematic alignment
+Despite only 43 reflections, students and chapters shared migration/identity themes in LDA and frequent shared terms, showing clear conceptual connection to Philips’ core themes, divergence in linguistic specificity, and proof of concept that reflection papers can be systematically analyzed with text mining.
+
+Why China?
+
+1. Students may have related to the story as it is the most dramatic & narrative-driven. The Xidan chapter in the book includes personal transformation, family conflict, generational tension, escaping a restrictive society, and emotional struggle + resilience. Stories with clear protagonists, conflict, risk, and resolution are always more memorable and relatable, even if students aren’t from China.
+
+2. More students in the class may personally identify as Asian or know Asian immigrant experiences. Even if students aren’t Chinese, many Asian-American students can easily connect to themes like parents having high expectations and cultural pressure around success. Many students can also relate to negotiating two identities (home culture vs America) and the challenges like language barriers and intergenerational sacrifice. So the China narrative became a stand-in for the broader “first-generation Asian immigrant experience.”
+
+3. China is a highly recognizable country compared to other countries since it has massive global visibility in media, politics, and education. Students already have mental associations they can attach the story to, making it easier to write and reflect on.
+
+4. The protagonist challenges Western/US identity directly. Xidan’s narrative frequently involves moving to America and contrasting Chinese vs American culture. She goes over common challenges that other immigrants also face like learning English, finding work in the U.S., and motherhood in displacement. This naturally overlaps with the dominant vocabulary students used in reflections, reinforcing the signal in TF, keyness, and LDA.
+
+5. Other chapters are more historical or context-heavy. Ana and Juanita’s story focuses on civil war and schooling during conflict, which may be harder to relate to. Marie and Michelle looks into poverty and leaving family behind and Nara goes into Soviet politics, genocide, and ancestory history. Thugnya shared her experience to America by boat and her displacement timeline. These chapters require historical knowledge or geopolitical framing for deeper engagement, but students tend to focus on personal feelings, culture, family, and gender.
+In contrast, the China chapter didn’t require much outside context to emotionally understand, so engagement was immediate and strong.
+
+6. “China” appeared often during the talk too
+Since Philips discussed Xidan during her presentation, those ideas may have acted as a second exposure, making it even more salient to students.
+
+In conclusion, 
+
+People didn’t necessarily like China, they related most to a specific story from China (Xidan’s) because it is emotionally intense and has a clear character arc. It is also less historical and requires less background, making it easier to empathize with and many Asian-American identity themes overlap with Xidan’s story. Her story also attaches easily to a country everyone already recognizes. Seeing that, it was the narrative and identity themes that happened to be tied to China, which many students already subconsciously connect to their own or their parents’ experiences.
+
+
+
+

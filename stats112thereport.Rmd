@@ -49,7 +49,7 @@ Understanding how students engage with complex global issues, such as migration,
 
 # IV. Exploratory Data Analysis
 
-```{r}
+```{r, echo = FALSE}
 # helper functions
 
 # clean text 

@@ -161,6 +161,8 @@ library(tidytext)
 ```{r, include=FALSE}
 # helper functions
 
+
+
 # clean text 
 clean_text_simple <- function(txt) {
 txt %>%
@@ -172,23 +174,45 @@ tolower()
 
 # clean corpus
 clean_corpus <- function(corp) {
-corp %>%
-tm_map(content_transformer(clean_text_simple)) %>%
-tm_map(removeNumbers) %>%
-tm_map(removePunctuation) %>%
-tm_map(stripWhitespace) %>%
-tm_map(removeWords, stopwords("en"))
+  corp %>%
+  tm_map(content_transformer(clean_text_simple)) %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(removeWords, stopwords("en"))
+}
+
+## Performs and Returns Cleaned Corpus 
+## For Data Frame and Dictionary
+clean.corpus.dict <- function(corpus){
+  cleaned_corpus <- clean_corpus(corpus)
+  
+  corpus_dictionary_all <- cleaned_corpus$content # The full cleaned text
+  corpus_dictionary <- strsplit(corpus_dictionary_all, " +")[[1]]
+  
+  stemmed_corpus <- cleaned_corpus %>%
+    tm_map(stemDocument, language = "english")
+  
+  corpus_stemmed_all <- corpus$content
+  
+  return(list(
+    corpus = stemmed_corpus, # Returns the final, stemmed corpus object
+    dictionary = corpus_dictionary,
+    stemmed_words = corpus_stemmed_all,
+    dictionary_all = corpus_dictionary_all
+  ))
+  
 }
 
 # create dfm
 create_dfm <- function(text_vector, minfreq = 3) {
-tokens(text_vector,
-remove_punct = TRUE,
-remove_numbers = TRUE) %>%
-tokens_remove(stopwords("en")) %>%
-tokens_tolower() %>%
-dfm() %>%
-dfm_trim(min_termfreq = minfreq)
+  tokens(text_vector,
+  remove_punct = TRUE,
+  remove_numbers = TRUE) %>%
+  tokens_remove(stopwords("en")) %>%
+  tokens_tolower() %>%
+  dfm() %>%
+  dfm_trim(min_termfreq = minfreq)
 }
 
 plot_with_commentary <- function(plot_expr, title = "", commentary = "") {
@@ -556,6 +580,80 @@ top_topic_doc <- doc_topics %>%
   select(document, topic, gamma, region)
 
 top_topic_doc
+```
+
+# Text Networks
+
+```{r}
+plot_text_network <- function(reflections, seed = 42) {
+  reflections <- clean.corpus.dict(reflections)
+
+  text_help <- data.frame(text = as.character(reflections), stringsAsFactors = FALSE)
+  
+  help.corpus <- corpus(text_help)
+  
+  dfm_data <- help.corpus |>
+      tokens(remove_punct = TRUE, remove_numbers = TRUE) |>
+      tokens_tolower() |>
+      tokens_remove(pattern = c("a", stopwords(source = "smart"))) |>
+      dfm()
+  
+  # 1. Create the Feature Co-occurrence Matrix (FCM)
+  # 'fcm()' remains the same.
+  low_fcm <- fcm(dfm_data)
+  
+  # 2. Select the top features for the network
+  # 'topfeatures()' remains the same.
+  co_occ_counts <- colSums(low_fcm)
+  feat <- names(sort(co_occ_counts, decreasing = TRUE)[1:30])
+  
+  # 3. Filter the FCM to only include the top features
+  # 'fcm_select()' remains the primary function. Using 'pattern = feat' is good practice.
+  low_fcm_filtered <- fcm_select(low_fcm, pattern = feat)
+  
+  # 4. Calculate vertex size based on marginal frequency (colSums)
+  # 'dfm_select()' is the correct way to filter the DFM before summing.
+  size_data <- log(colSums(dfm_select(dfm_data, pattern = feat)))
+  
+  # 5. Plot the feature network
+  # 'textplot_network()' is now deprecated in favor of 'fcm_plot()'.
+  # It is best practice to use the newer function for quanteda 4.0+.
+  
+  set.seed(seed)
+  
+  textplot_network(
+    low_fcm_filtered,
+    min_freq = 0.60,                 
+    edge_color = "gray60",           # Lighter, neutral edges
+    vertex_color = "steelblue",      # Professional blue nodes
+    vertex_frame_color = "darkblue", # Darker border for definition
+    vertex_size = size_data / min(size_data) * 2,
+    vertex_labelsize = size_data / min(size_data) * 2.5,
+    vertex_label_font = 2
+  )
+}
+```
+
+```{r}
+general_reflections <- Corpus(DirSource("Reflections/General"), 
+                      readerControl = list(language = "en"))
+
+plot_text_network(general_reflections)
+
+middle_east_reflections <- Corpus(DirSource("Reflections/Middle East"), 
+                      readerControl = list(language = "en"))
+
+plot_text_network(middle_east_reflections)
+
+south_america_reflections <- Corpus(DirSource("Reflections/South America"), 
+                      readerControl = list(language = "en"))
+
+plot_text_network(south_america_reflections)
+
+asia_reflections <- Corpus(DirSource("Reflections/Asia"), 
+                      readerControl = list(language = "en"))
+
+plot_text_network(asia_reflections)
 ```
 
 # VI. Results

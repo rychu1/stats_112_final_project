@@ -8,6 +8,138 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+# I. Abstract
+
+This study conducts a quantitative text analysis of 43 STATS 112 student reflection papers written in response to Susan Philips' talk and book *In the Heart of Another*, which presents migration narratives from El Salvador, Mexico, Armenia, China, and Vietnam. Using a suite of statistical text mining methods—including document-term matrices, term frequency analysis, keyness statistics, word-cloud visualization, and Latent Dirichlet Allocation (LDA) topic modeling—I compare linguistic patterns across four reflection groups (General, Middle East, South America, and Asia) and evaluate their alignment with the book chapters they correspond to. The analyses reveal three consistent patterns. First, students overwhelmingly emphasized broad cultural and personal themes such as family, culture, life, women, and stories, while largely omitting the geopolitical and historical vocabulary that was highly frequent in the chapters (e.g., civil war, Soviet, Vietnam, El Salvador). Second, references to China and the Xidan chapter appeared at surprisingly high frequency across all regions, a pattern further reinforced by a China-specific LDA topic. This suggests that students resonated more strongly with narratives involving language barriers, educational pressures, and bicultural identity—experiences that were more relatable to the contemporary student population than the historically grounded stories from other regions. Finally, keyness analyses consistently showed that chapter texts were dominated by place-specific and historically anchored terms, while student reflections favored generalized and emotionally oriented language. Taken together, the results indicate that students tended to abstract Philips’ region-specific narratives into universal themes of migration and identity, with especially strong alignment toward the Xidan (China) narrative. This study demonstrates how text-mining techniques can effectively quantify interpretive patterns in qualitative coursework and highlights how student engagement can depend more on personal relatability than on contextual or historical detail.
+
+# II. Statement of the Problem
+
+Courses that engage with global social issues often rely on reflection papers to encourage students to connect personally with complex topics such as migration, identity formation, and social justice. However, while these reflections provide rich qualitative insights, they are rarely analyzed systematically, making it difficult to determine which aspects of the course material resonate most with students and whether their interpretations align with the original texts. In the context of Susan Philips’ In the Heart of Another, which presents migration narratives from El Salvador, Mexico, Armenia, China, and Vietnam, it remains unclear how students respond to the distinct historical and geopolitical content of each chapter and whether their reflections preserve these regional distinctions.
+
+The central problem addressed in this project is the gap between what Philips emphasizes in her chapters and what students emphasize in their reflections. Initial observations suggested that students may generalize the narratives into broad cultural or emotional themes, but this had not been formally evaluated. Furthermore, an unexpected pattern emerged during preliminary exploration: students appeared to reference the China (Xidan) chapter disproportionately, even when reflecting on other regions. This raised additional questions about the consistency and specificity of student engagement across regions.
+
+Therefore, this study applies statistical text-mining techniques, such as term frequency analysis, keyness comparison, and LDA topic modeling, to investigate three core questions:
+- Which linguistic and thematic patterns dominate student reflections across different regions?
+- To what extent do these patterns align with the vocabulary and narrative focus of the corresponding book chapters?
+- Why do certain narratives, particularly the China/Xidan chapter, appear to resonate more strongly with students than others?
+
+By quantifying these patterns, this project aims to better understand how students interpret complex migration narratives and to assess whether reflection papers capture regional nuance or instead gravitate toward personally relatable, generalized themes. The results have implications not only for educational assessment but also for understanding how contemporary students internalize global stories of displace
+
+# III. Dataset Descrition and Data Cleaning
+
+## Dataset Description
+
+The dataset for this study consists of 43 student reflection papers written in response to Susan Philips’ *In the Heart of Another.* Each reflection was submitted as a pdf, then turned into a plain-text file and grouped into one of four folders based on the regional focus selected by the student:
+- General (n = ?)
+- Middle East (n = ?)
+- South America (n = ?)
+- Asia (n = ?)
+
+Each reflection varies in length, writing style, and structural complexity. These documents collectively represent qualitative student responses to migration narratives across five book chapters: El Salvador, Mexico, Armenia, China, and Vietnam.
+
+For comparison, five chapter texts from Philips’ book were included:
+- Ana & Juanita - El Salvador
+- Marie & Michelle - Mexico
+- Nara & Oktiabrina - Armenia
+- Xidan - China
+- Thuynga - Vietnam
+
+All files were read using the readtext package, allowing for consistent import and metadata retention.
+
+## Goals of Data Cleaning
+
+Before statistical text analysis, the primary objectives of cleaning were to:
+- Standardize vocabulary for fair comparison across documents
+- Remove noise introduced by formatting, punctuation, and grammatical forms
+- Prepare text for DFM/DTM construction required for keyness analysis and LDA modeling
+- Ensure compatibility between student reflections and chapter texts
+Because raw text exhibits high variability, cleaning was essential for constructing consistent document-feature matrices and extracting meaningful patterns.
+
+## Cleaning Procedures
+
+Data cleaning followed a structured pipeline applied uniformly across all reflections and chapter texts.
+
+### Normalization
+The text was normalized by first converting all of the text to lowercase. Hyphens and apostrophes were replaced with spaces to prevent unintended token splits and additional non-alphanumeric characters were removed. This prevented multiple variants of the same word (e.g., women, Women, women, ) from being counted as separate tokens.
+
+### Token-Level Cleaning
+
+Using tm and quanteda, we removed numbers, punctuation, and extra whitespace along with standard English stopwords (e.g., the, and, of, etc.). TO reduce sparsity, 
+we trimmed rare terms using dfm_trim(min_termfreq = 3). These steps produced a cleaner, more interpretable vocabulary set for frequency analysis and modeling.
+
+### Corpus Construction
+
+Each folder of reflections was transformed into 1) a cleaned text column, 2) a document-feature matrix (DFM) using quanteda::dfm(), and 3) a combined union of features to ensure all DFMs shared a uniform vocabulary when needed. This allowed for a fair comparison across regions in order to do valid LDA topic modeling and have consistent keyness tests between reflections and chapters.
+
+#### Chapter Corpus Cleaning
+
+The five chapter texts underwent the same pipeline. This ensured that any differences observed in keyness or frequency were driven by true thematic differences, not by preprocessing inconsistencies.
+
+## 4. Resulting Dataset After Cleaning
+
+CLeaning lead to a reduction in sparity and improved interpretability of matrices. Now, the dataset consisted of: 
+- 43 reflection documents
+- 5 chapter documents
+- A unified vocabulary across all reflections
+- DFMs and DTMs that are ready for statistical testing, such as word frequency comparison, word cloud visualization, keyness analysis, and LDA topic modeling
+
+The final cleaned dataset allowed for robust, reproducible statistical analysis of linguistic patterns across both student reflections and book chapters.
+
+# IIII. Variables in the Study
+
+## Independent Variables
+
+### Region/Chapter Source (Book Chapters)
+Each chapter of *In the Heart of Another* corresponds to a distinct migration narrative rooted in a specific country or historical context (El Salvador, Mexico, Armenia, China, and Vietnam). This variable functions as an external reference category against which student reflections are compared in keyness analysis and topic alignment.
+
+### Reflection Group (Student Papers)
+The 43 reflections were organized into four groups based on the country or region the student chose to focus on:
+- Middle East
+- South America
+- Asia
+- General, which are reflections that did not have specific topic/country of focus 
+Although these labels were instructor-provided or student-selected, the content analysis often revealed thematic overlap across groups. This variable allows for regional comparisons in frequency distributions, topic proportions, and thematic alignment.
+
+## Dependent Variables
+
+These variables are generated through text processing and serve as measurable indicators of thematic emphasis, vocabulary choice, and semantic structure.
+
+### Word Frequency
+Counts of individual terms within each region’s reflections or within each book chapter. This variable provides a baseline measure of dominant themes and is the foundation for comparing high-frequency vocabulary across groups.
+
+### Keyness Scores
+Statistical measures (using the log-likelihood ratio) that quantify the extent to which specific words are disproportionately associated with either the reflections or the corresponding chapter. Higher absolute keyness values indicate greater divergence in linguistic focus.
+
+### Topic Proportions (LDA y-values)
+For each document, the LDA model outputs a distribution over latent topics. These proportions serve as dependent variables representing the thematic mixture present in each reflection. Averaging y-values by region enables comparisons of thematic dominance across reflection groups.
+
+### Text Similarity/Thematic Alignment
+Although not measured through a single formal metric, alignment is inferred through frequency overlap, keyness patterns, and topic loadings. This variable captures the degree to which students reproduce or diverge from the narrative emphasis of the book chapters.
+
+## Derived and Constructed Variables
+
+These variables are created during preprocessing to ensure consistency across analyses and to improve interpretability.
+
+### Stemmed/Lowercased Words
+All text was cleaned, normalized, lowercased, and stripped of punctuation and stopwords. This standardization reduces noise and ensures that word counts reflect thematic usage rather than grammatical variation.
+
+### Document-Term Matrices (DTMs/DFMs)
+Sparse matrices representing frequencies of terms across documents. These serve as the core data structures for keyness analysis, word clouds, and LDA topic modeling.
+
+### Unified Vocabulary Feature Set
+Before LDA modeling, all reflection DFMs were matched to a shared union of features to ensure consistent dimensionality across groups. This variable prevents bias in topic assignment caused by mismatched vocabularies.
+
+Overall, these variables allow the study to quantitatively evaluate both the content and the structure of student interpretations, enabling comparisons across regions and alignment with the narrative frameworks presented in *In the Heart of Another.*
+
+# V. Exploratory Data Analysis
+
+The exploratory phase of the analysis focused on understanding the structure, vocabulary, and thematic emphasis of the 43 student reflection papers prior to conducting formal keyness and topic-modeling analyses. After cleaning and preprocessing the text—removing punctuation, numbers, English stopwords, and standardizing all text to lowercase, we constructed document-feature matrices (DFMs) for each reflection group: General, Middle East, South America, and Asia. These DFMs enabled frequency comparison, visualization, and later integration into a unified vocabulary for LDA.
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 
 
 set.seed(1234)
@@ -23,29 +155,6 @@ library(RColorBrewer)
 library(tidytext)
 ```
 
-# I. Abstract
-
-This study analyzes 43 student reflection papers in response to Susan Philips' talk and her book *In the Heart of Another*, which explores migration, identity, and social justice across multiple global contexts. Student reflections, categorized by regions (Middle East, South America, Asia, and a general group) were compared to the text of the book chapters corresponding to El Salvador, Mexico, Armenia, China, and Vietnam. Using text mining techniques, including term frequency analysis, keyness analysis, word clouds, and Latent Dirichlet Allocation (LDA) topic modeling, the study identifies the primary themes emphasized by students and their alignment with the book's content. Results indicate that students consistently highlight themes of migration, identity, family, community, and social justice, with notable regional differences in emphasis. The findings demonstrate that while student reflections resonate with the central topics of Philips' work, they often emphasize personal and social dimensions over historical or contextual details. The study underscores the utility of text mining for examining qualitative student data and suggests that larger datasets and complementary surveys could provide deeper insights into student engagement with global societal issues.
-
-# II. Statement of the Problem
-
-Understanding how students engage with complex global issues, such as migration, identity, and social justice, is a central goal of courses like Stats 112, which incorporate reflection papers as a pedagogical tool. While Susan Philips' book *In the Heart of Another* provides a rich exploration of these topics through personal narratives from multiple regions, there is limited systematic analysis of how students interpret and respond to this material. Specifically, it is unclear which themes resonate most strongly with students, whether these responses vary by regional context, and how closely student reflections align with the book's content. This project addresses this gap by applying text mining and topic modeling techniques to 43 student reflection papers, comparing them with the corresponding chapters of the book, to uncover patterns in student engagement, thematic emphasis, and regional differences in interpretation. 
-
-# III. Variables in the Study
-
-1. Independent variables
-- Chapter/Region of the book: each chapter of *In the Heart of Another* focuses on a different region or set of narraties (El Salvador, Mexico, Armenia, China, Vietnam). This variable represents the source material that students responded to in their reflections.
-- Student Focus/Folder: the reflections are organized by the main country of focus in each paper (Middle East, South America, Asia, and General). This variable allows for comparison of student responses across different region contexts. 
-
-2. Dependent variables
-- Word frequency: The count of each word appearing in student reflections and book chapters, used to identify which terms or themes are most common.
-- Keyness / Text Similarity: the statistical significance of word usage differences between reflections and corresponding book chapters.
-- Topic Distribution: The mixture of topics present in each reflection, as identified by Latent Dirichlet Allocation (LDA) topic modeling.
-- Thematic Alignment: The degree to which student reflections align with the major themes and narratives presented in the book.
-
-3. Derived Variables
-- Stemmed Words: Words reduced to their root form to consolidate variants (e.g., migrate, migrating → migr).
-- Document-Term Matrices (DTM): Matrices representing the frequency of terms across reflections or book chapters, which serve as the basis for keyness analysis and topic modeling.
 
 # IV. Exploratory Data Analysis
 
@@ -107,7 +216,7 @@ labs(title = title, x = "Word", y = "Frequency")
 ```
 
 ```{r, include=FALSE}
-# wordclouds
+# wordclouds helper function
 plot_wordcloud_dfm <- function(dfm_obj, title = "") {
   
   op <- par(mar = c(0, 0, 1, 0))
@@ -128,31 +237,24 @@ plot_wordcloud_dfm <- function(dfm_obj, title = "") {
 }
 
 
-# plot keyness comparison
+# keyness comparison helper function
 plot_keyness_comparison <- function(ref_dfm, chap_dfm, plot_title) {
   # align dfms
   chap_dfm <- dfm_match(chap_dfm, features = featnames(ref_dfm))
-  
   # combine
   combined <- rbind(ref_dfm, chap_dfm)
-  
   # want chapter rows
   target <- c(rep(FALSE, nrow(ref_dfm)), rep(TRUE, nrow(chap_dfm)))
-  
   # compute keyness
   key <- textstat_keyness(combined, target = target)
-  
   # create plot object
-  p <- textplot_keyness(key, color = c("darkblue", "firebrick3"), labelsize = 3)
-  
+  p <- textplot_keyness(key, color = c("mediumseagreen", "salmon"), labelsize = 3)
   # print
   print(p)
-  
   # add title
   grid::grid.text(plot_title,
                   y = unit(1, "npc") - unit(2, "lines"),
                   gp = grid::gpar(fontsize = 16, fontface = "bold"))
-  
   # analysis
   cat("\n\n---\n### Commentary on Keyness:", plot_title, "\n\n")
   cat("*(Write commentary here.)*\n---\n\n")
@@ -209,6 +311,12 @@ plot_top_terms(asia_dfm, title = "Top Words: Asia Reflections"),
 )
 ```
 
+Term-frequency bar plots revealed that all four reflection groups were dominated by broad cultural and emotional vocabulary. Words such as culture, family, life, language, people, women, and stories were consistently among the most frequent terms. Notably, region-specific or historically grounded terms—such as El Salvador, Armenia, civil war, Vietnam, or Mexico—were almost entirely absent from the top-frequency lists.
+
+This pattern suggests that students tended to focus on universal themes of identity and migration, rather than the historical or geopolitical details emphasized in Philips’ chapters.
+
+Across groups, one surprising trend emerged: the frequent appearance of china and chinese even in reflections categorized under Middle East or South America. This indicates that students repeatedly referenced the Xidan narrative, regardless of the nominal region of their reflection, foreshadowing later findings from the keyness and LDA analyses.
+
 ```{r}
 # wordclouds
 plot_wordcloud_dfm(general_dfm, "General Reflections")
@@ -226,7 +334,13 @@ cat(paste(strwrap("The student papers on Asia were primarily concerned with cult
 
 ```
 
-Chapter Analysis 
+Word clouds further reinforced the dominance of generalized, emotionally resonant vocabulary. The General and South America groups displayed dense clusters of words such as culture, family, immigrants, and stories, while the Middle East and Asia clouds showed additional prominence of China, English, and language.
+
+Across all groups, names of individual chapter protagonists (Ana, Marie, Nara, Xidan, Thuynga) rarely appeared with high visual weight. Instead, students tended to speak about migration abstractly or in relation to personal experience, rather than grounding their reflections in the specific narratives from the book.
+
+These visualizations supported a consistent preliminary conclusion: students’ reflections formed a culturally introspective, identity-centered discourse, rather than a chapter-specific or regionally anchored one.
+
+## Frequency Comparison with Book Chapters
 
 ```{r, include=FALSE}
 chapters <- list(
@@ -275,7 +389,18 @@ plot_top_terms(chap_dfms$thuynga, title = "Thuynga (Vietnam)"),
 
 ```
 
-Keyness: Reflection vs. Chapter
+
+To contextualize the student vocabulary, top-frequency terms from the book chapters were extracted for comparison. Unlike the reflections, the chapters contained numerous location markers and historical descriptors, including el salvador, city, civil, war, soviet, armenian, vietnam, and ship. These contrasts highlighted the gap between Philips’ region-specific storytelling and the more generalized themes present in the student texts.
+
+This mismatch aligns with expectations for reflection papers, in which students typically prioritize personal meaning over factual detail, but it also provided early evidence of weak regional alignment between reflections and the source chapters.
+
+## Preparation for Modeling 
+
+Prior to LDA topic modeling, the vocabulary across all groups was standardized by taking the union of all features present in the four DFMs. This ensured that each document was represented in the same feature space and prevented bias caused by uneven vocabulary overlap.
+
+A combined reflection DTM was then constructed as the primary input for topic modeling, enabling a holistic view of thematic structure across all student texts.
+
+# Keyness: Reflection vs. Chapter
 
 ```{r}
 plot_keyness_comparison(
@@ -291,7 +416,7 @@ plot_keyness_comparison(general_dfm, chap_dfms$thuynga, "General vs Thuynga")
 
 ```
 
-LDA Topic Modeling 
+# LDA Topic Modeling 
 
 ```{r, include=FALSE}
 # lda modeling
@@ -354,7 +479,7 @@ topic_terms <- terms(lda_model, 12) # top 12 words per topic
 topic_terms
 ```
 
-Top Terms per topic
+### Top Terms per topic
 
 ```{r}
 # top 12 terms per topic
@@ -375,7 +500,7 @@ ggplot(topic_terms_df, aes(x = reorder(term, rank), y = as.numeric(rank), fill =
   theme_bw()
 ```
 
-Topic Distribution per document
+### Topic Distribution per document
 
 ```{r, include=FALSE}
 k <- lda_model@k  # number of topics
@@ -404,7 +529,7 @@ ggplot(doc_topics, aes(x = factor(document), y = gamma, fill = factor(topic))) +
   theme(axis.text.x = element_blank())
 ```
 
-Average topic distribution per region
+### Average topic distribution per region
 
 ```{r}
 avg_topic_region <- doc_topics %>%
@@ -422,7 +547,7 @@ ggplot(avg_topic_region, aes(x = topic, y = avg_gamma, fill = topic)) +
   theme_bw()
 ```
 
-Top Topic per Document
+### Top Topic per Document
 
 ```{r}
 top_topic_doc <- doc_topics %>%
@@ -433,50 +558,105 @@ top_topic_doc <- doc_topics %>%
 top_topic_doc
 ```
 
-# Conclusion
+# VI. Results
 
+The results of the analysis draw from multiple text-mining approaches, including term-frequency comparison, word-cloud visualization, keyness statistics, and LDA topic modeling. Together, these methods illustrate how students interpreted Philips’ migration narratives and the extent to which their language aligned or diverged from the vocabulary of the book chapters.
 
-1. Students resonate emotionally more than contextually
-Across TF and word clouds, students emphasize human-centered themes like: identity and belonging (life, culture, family, people), empathy and connection (feel, stories, think), and gender and resilience (women). In contrast, the book chapters surface historical & geopolitical identifiers (e.g., civil war in El Salvador, Soviet Armenia, migration by ship from Vietnam), showing that students internalized personal struggle narratives but did not engage as deeply with regional historical framing.
+## 1. Term Frequency Patterns in Student Reflections
 
-2. Regional categorization of reflections does not always match content
-The “Middle East” and “South America” folders still contain high-frequency references to China and generalized U.S. immigration terms (america, immigrant, states, women). This suggests that students often mapped specific global narratives onto broader U.S. immigration discourse. Reflection labels were not strong predictors of linguistic content and the Xidan (China) story disproportionately shaped student vocabulary across all regions. This is an important conclusion about student interpretation behavior, not modeling error.
+Across all four reflection groups (General, Middle East, South America, Asia), the most frequent terms were highly consistent. Words such as culture, family, life, people, women, stories, and immigrants appeared prominently in nearly every group. These terms reflect broad cultural and emotional themes, suggesting that students centered their reflections around personal interpretation rather than historical or region-specific detail.
 
-3. Topic modeling reveals distinct thematic clusters, but personal themes dominate
-The 4-topic LDA model can be interpreted as: 1) cultural identity and assimilation, 2) emotional response and empathy, 3) China-centered narrative influence and generational migration, and 4) gender, mobility, and societal-level immigration patterns. The topic distribution plots show that most documents were almost entirely dominated by a single topic (gamma > 0.95), meaning student reflections were thematically clear but narrow in focus.
+A notable and unexpected pattern was the high occurrence of “china,” “chinese,” and “english” across multiple groups—including those not associated with Asia. Even in the Middle East and South America reflections, China-related terms appeared more frequently than region-specific vocabulary like El Salvador, Armenia, or Mexico. This early signal pointed to a strong student connection to the Xidan chapter.
 
-4. Students engage with migration as a lived experience, not a historical event
-The lack of high-keyness geographic terms like El Salvador, Mexico, Vietnam, or Armenia in student text shows that students framed migration as a personal/familial journey, a cultural identity transition, and part of a shared immigrant condition rather than grounding it in country-specific political forces highlighted in Philips’ chapters.
+## 2. Word Clouds Reveal Emphasis on Universal Themes
 
-5. Language and culture barriers are perceived as central to migration
-Across all reflection regions, students elevate words like culture, english, immigrants, and american as significantly key, implying that students saw cultural integration and language acquisition as core challenges. Even when chapters didn’t prioritize those terms (e.g., Mexico or Armenia), students still foregrounded them. Linguistic difficulty and cultural identity were more salient to students than to the chapter texts themselves.
+Word cloud visualizations reinforced the dominance of identity and cultural themes. In all reflection groups, the largest and most frequent terms centered around:
+- migration and adjustment (migrating, challenges, leaving)
+- social and cultural identity (culture, language, family, women)
+- personal stories (story, people, experiences)
 
-6. Gender-focused interpretation is a strong emergent theme
-Topic 4 and word clouds both strongly highlight women, supporting the conclusion that students perceived female narratives, resilience, and mother-figures as particularly impactful and gender was one of the strongest unifying takeaways, despite not being the controlling variable.
+Region-specific proper nouns, which were strong in the original book chapters, were visually minimal or absent. Only the Asia group showed a strong presence of country markers, with china and chinese appearing at large scale—further supporting the trend of heightened student engagement with the Xidan narrative.
 
-7. Limited dataset still produced meaningful thematic alignment
-Despite only 43 reflections, students and chapters shared migration/identity themes in LDA and frequent shared terms, showing clear conceptual connection to Philips’ core themes, divergence in linguistic specificity, and proof of concept that reflection papers can be systematically analyzed with text mining.
+### 3. Comparison with Book Chapters: Strong Divergence in Vocabulary
 
-Why China?
+When comparing top chapter terms to reflection terms, a clear contrast emerged as book chapters emphasized common ideas like geopolitical context (civil war, soviet, vietnam, el salvador), place names and historical markers, family roles tied to specific narratives (husband, father, parents), and narrative characters (Ana, Nara, Thuynga, etc.). 
 
-1. Students may have related to the story as it is the most dramatic & narrative-driven. The Xidan chapter in the book includes personal transformation, family conflict, generational tension, escaping a restrictive society, and emotional struggle + resilience. Stories with clear protagonists, conflict, risk, and resolution are always more memorable and relatable, even if students aren’t from China.
+Student reflections emphasized themes like cultural identity, immigrant experience in general, language and education, and emotional interpretation.For example, the Ana & Juanita chapter contained frequent references to civil, war, city, and el salvador, but student reflections on these narratives rarely incorporated such terms. Instead, reflections featured general cultural descriptors like life, culture, and family.
 
-2. More students in the class may personally identify as Asian or know Asian immigrant experiences. Even if students aren’t Chinese, many Asian-American students can easily connect to themes like parents having high expectations and cultural pressure around success. Many students can also relate to negotiating two identities (home culture vs America) and the challenges like language barriers and intergenerational sacrifice. So the China narrative became a stand-in for the broader “first-generation Asian immigrant experience.”
+This consistent mismatch indicates that although students engaged with the themes of migration, they did not replicate the historical specificity embedded in Philips’ writing.
 
-3. China is a highly recognizable country compared to other countries since it has massive global visibility in media, politics, and education. Students already have mental associations they can attach the story to, making it easier to write and reflect on.
+### 4. Keyness Analysis: Distinct Differences in Linguistic Focus
 
-4. The protagonist challenges Western/US identity directly. Xidan’s narrative frequently involves moving to America and contrasting Chinese vs American culture. She goes over common challenges that other immigrants also face like learning English, finding work in the U.S., and motherhood in displacement. This naturally overlaps with the dominant vocabulary students used in reflections, reinforcing the signal in TF, keyness, and LDA.
+Keyness comparisons between student reflections and each book chapter revealed systematic divergences. Chapter texts were characterized by contextual details—place names, time markers, political terms, and family-role vocabulary while student reflections showed significantly higher keyness for culture, america, english, immigrant, story, and leaving. Across all five chapters, the reflections’ vocabulary leaned toward personalized and contemporary interpretations of migration, rather than the narrative- or location-specific language used in the book. The Xidan (China) chapter displayed the most thematic overlap with students’ vocabulary—particularly around family, education, and identity—yet even here students tended to reframe the narrative toward American immigrant contexts (e.g., english, america).
 
-5. Other chapters are more historical or context-heavy. Ana and Juanita’s story focuses on civil war and schooling during conflict, which may be harder to relate to. Marie and Michelle looks into poverty and leaving family behind and Nara goes into Soviet politics, genocide, and ancestory history. Thugnya shared her experience to America by boat and her displacement timeline. These chapters require historical knowledge or geopolitical framing for deeper engagement, but students tend to focus on personal feelings, culture, family, and gender.
-In contrast, the China chapter didn’t require much outside context to emotionally understand, so engagement was immediate and strong.
+### 5. LDA Topic Modeling: Four Distinct Themes
 
-6. “China” appeared often during the talk too
-Since Philips discussed Xidan during her presentation, those ideas may have acted as a second exposure, making it even more salient to students.
+A four-topic Latent Dirichlet Allocation model was applied to all reflection documents. The resulting topics were interpretable and aligned closely with the thematic patterns observed in earlier analyses.
 
-In conclusion, 
+#### Topic 1: Cultural Assimilation and Identity
 
-People didn’t necessarily like China, they related most to a specific story from China (Xidan’s) because it is emotionally intense and has a clear character arc. It is also less historical and requires less background, making it easier to empathize with and many Asian-American identity themes overlap with Xidan’s story. Her story also attaches easily to a country everyone already recognizes. Seeing that, it was the narrative and identity themes that happened to be tied to China, which many students already subconsciously connect to their own or their parents’ experiences.
+Terms related to culture, language, english, america, and learning.
+This topic captured reflections focusing on adapting to a new cultural environment.
 
+#### Topic 2: Emotional Interpretation of Stories
 
+Words like people, life, stories, women, challenges, family.
+This topic reflects empathetic responses and students’ affective reactions to the narratives.
 
+#### Topic 3: China-Centered and Generational Migration
 
+Dominated by china, chinese, family, school, parents, work.
+This topic clearly corresponds to the Xidan chapter and was disproportionately represented across regions.
+
+#### Topic 4: Gendered Experiences and Immigrant Struggles
+
+Featuring terms like women, community, immigrants, stories, culture.
+This topic reflects broader gender and social justice themes.
+
+#### Topic Distribution by Region
+
+The Asia reflections displayed the strongest concentration in Topic 3 (China-centered narrative). The Middle East and South America groups unexpectedly showed moderate activation of this same topic—confirming that students referenced the Xidan narrative regardless of region and the General reflections were more mixed but leaned toward Topics 1 and 2, emphasizing cultural assimilation and emotional interpretation.
+
+## 6. Summary of Key Findings
+
+Across all analytical methods, we saw three core patterns. Students gravitated toward universal, personal themes rather than region-specific historical context.
+Vocabulary focused on culture, language, identity, and family instead of country names or historical events. The China (Xidan) chapter dominated student reflection language as even in unrelated regional groups, China-related terms appeared frequently, and a full LDA topic centered on Chinese migration experiences.Finally, reflections showed partial thematic alignment but strong lexical divergence from book chapters as students resonated with the emotional core of migration narratives but reinterpreted them through contemporary, culturally familiar lenses.
+
+# VII. Conclusion
+
+The analysis of student reflections demonstrates that learners resonate emotionally with migration narratives far more than they engage with historical or geopolitical context. Across term frequency and word cloud analyses, students consistently emphasized human-centered themes such as identity and belonging (life, culture, family, people), empathy and connection (feel, stories, think), and gender and resilience (women). In contrast, the book chapters highlighted concrete historical and regional identifiers, including the civil war in El Salvador, Soviet Armenia, and migration by ship from Vietnam. This contrast suggests that while students internalized narratives of personal struggle and human experience, they did not deeply engage with the structural or historical frameworks of the chapters.
+
+The regional categorization of reflections does not always align with the content. For instance, folders labeled “Middle East” and “South America” frequently contained high-frequency references to China and generalized U.S. immigration terms (america, immigrant, states, women). This indicates that students often mapped specific global narratives onto a broader U.S. immigration discourse. Labels assigned to reflection folders were not strong predictors of the linguistic content, and the Xidan (China) chapter disproportionately influenced vocabulary across all regions. This pattern reflects student interpretation behavior rather than an artifact of data processing or modeling.
+
+Topic modeling revealed distinct thematic clusters, yet reflections remained dominated by personal themes. The four-topic LDA model can be interpreted as: cultural identity and assimilation, emotional response and empathy, China-centered narrative influence and generational migration, and gender, mobility, and societal-level immigration patterns. Topic distribution plots show that most documents were heavily dominated by a single topic (gamma > 0.95), indicating thematic clarity but limited diversity within individual reflections.
+
+Students framed migration primarily as a lived experience rather than a historical or political event. The absence of high-keyness geographic terms like El Salvador, Mexico, Vietnam, or Armenia demonstrates that reflections centered on personal and familial journeys, cultural identity transitions, and shared immigrant experiences rather than the country-specific political forces highlighted in Philips’ chapters. Language and culture emerged as central challenges across all regions, with key terms such as culture, english, immigrants, and american indicating that students prioritized cultural integration and language acquisition over geopolitical context.
+
+Gender-focused interpretation was another strong emergent theme. Both LDA Topic 4 and word clouds highlighted women, suggesting that female narratives, resilience, and maternal figures resonated strongly with students, regardless of whether gender was explicitly foregrounded in the chapters. This emphasizes how identity and lived experience functioned as unifying lenses for reflection.
+
+The prominence of China in student reflections is particularly notable. The Xidan chapter offered a narrative that was emotionally intense, had a clear character arc, and emphasized themes like family conflict, generational tension, and cultural negotiation. These features made the story more immediately relatable than other chapters, which were more historically or contextually dense. Furthermore, students may have had personal or vicarious familiarity with Asian immigrant experiences, increasing relatability. China’s high visibility in global media and education also provided a recognizable reference point, making it easier for students to connect their reflections to the narrative.
+
+Despite a limited dataset of 43 reflections, the study produced meaningful thematic alignment with Philips’ core themes. Students clearly engaged with migration, identity, and cultural negotiation, even as linguistic specificity and historical context were often abstracted. This confirms that reflective writing can be systematically analyzed through text mining to reveal both conceptual alignment and divergence in interpretation.
+
+Several limitations should be noted. The sample size restricts generalizability, and the folder labels do not consistently reflect content, complicating region-specific analysis. Preprocessing choices, including stemming and stopword removal, could influence frequency and keyness metrics. Finally, the analysis focuses on textual data alone, which may overlook broader dimensions of student engagement, such as affective or classroom interaction factors. Complementary methods like surveys or interviews could provide additional insights.
+
+In terms of educational practice, the findings suggest that emotionally resonant narratives, such as Xidan’s story, are highly effective for fostering reflection and empathy. Educators can enhance learning by pairing these narratives with structured historical or cultural context, incorporating diverse perspectives, highlighting identity and intersectionality, and providing scaffolding for less familiar regions. Reflection exercises, repeated exposure, and guided discussion can help students connect emotionally and cognitively, balancing personal resonance with contextual understanding. Overall, this study demonstrates how text mining of student reflections can reveal meaningful patterns in engagement, offering valuable insights for curriculum design in global migration and diversity education.
+
+# VIII. Recommedations 
+As diversity continues to become a central topic in education and society, it is increasingly important for classrooms to engage students with stories that foster empathy, cultural awareness, and personal connection. Based on the analysis of student reflections and engagement patterns, here are some takeaways from this study:  
+
+**Leverage emotionally resonant narratives:** Stories like Xidan’s, which include personal struggle, family dynamics, and identity negotiation, are highly effective at encouraging students to reflect deeply. Educators should prioritize narratives that balance human experience with cultural or historical context to maximize engagement.
+
+**Incorporate multiple perspectives:**  While personal stories drive emotional engagement, it is also important to help students situate these experiences within broader historical, geopolitical, and social frameworks. Activities that connect individual narratives to systemic or regional contexts can deepen understanding without reducing emotional resonance.  
+
+**Highlight identity and intersectionality:** Students respond strongly to themes of gender, generational identity, and cultural negotiation. Curricula should include stories representing a range of identities and experiences, encouraging reflection on how factors like gender, ethnicity, and migration history shape lived experiences.  
+
+**Use recognizable entry points:** Students often connect most easily to stories with familiar or highly visible cultural references. When introducing less well-known regions or histories, teachers can provide scaffolding through background context, visuals, or guided discussions to make engagement more immediate.  
+
+**Encourage reflective writing as a tool for empathy:** Reflection exercises help students internalize complex ideas about migration, culture, and identity. Structured prompts that emphasize personal connection alongside factual understanding can support both emotional and cognitive learning outcomes.  
+
+**Integrate repeated exposure and discussion:** Narratives reinforced through lectures, discussions, or multimedia presentations help students retain and relate to material. Revisiting stories multiple times encourages deeper reflection and vocabulary adoption.  
+
+**Balance emotional and contextual learning:** While emotionally powerful stories are critical, pairing them with analytical discussions on historical, social, and political frameworks ensures students develop a more comprehensive understanding of migration, diversity, and global experiences.  
+
+In sum, teaching diversity effectively requires blending emotionally engaging narratives with structured contextual learning. Stories like Xidan’s illustrate the power of personal narratives to foster empathy, while thoughtful integration of historical and cultural context ensures that students not only relate but also understand.

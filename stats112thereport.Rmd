@@ -208,7 +208,8 @@ clean.corpus.dict <- function(corpus){
 create_dfm <- function(text_vector, minfreq = 3) {
   tokens(text_vector,
   remove_punct = TRUE,
-  remove_numbers = TRUE) %>%
+  remove_numbers = TRUE,
+  stem = TRUE) %>%
   tokens_remove(stopwords("en")) %>%
   tokens_tolower() %>%
   dfm() %>%
@@ -487,6 +488,10 @@ middleeast_dfm    <- dfm_match(middleeast_dfm, features = features_union)
 southamerica_dfm  <- dfm_match(southamerica_dfm, features = features_union)
 asia_dfm          <- dfm_match(asia_dfm, features = features_union)
 
+general_dfm <- dfm_wordstem(general_dfm)
+middleeast_dfm <- dfm_wordstem(middleeast_dfm)
+southamerica_dfm <- dfm_wordstem(southamerica_dfm)
+asia_dfm <- dfm_wordstem(asia_dfm)
 
 # combined reflection dfm
 all_ref_dfm <- rbind(
